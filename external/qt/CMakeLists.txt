@@ -335,17 +335,13 @@ else()
             wayland-egl
             wayland-cursor
             wayland-client
-            xcb-shm
-            xcb-xfixes
-            xcb-render
             xkbcommon
             xkbcommon-x11
+            Xi
+            Xext
+            Xfixes
             Xrender
             ffi
-            icutu
-            icui18n
-            icuuc
-            icudata
         )
         if (DESKTOP_APP_USE_GLIBC_WRAPS)
             target_link_libraries(external_qt
@@ -356,6 +352,7 @@ else()
         endif()
         target_link_libraries(external_qt
         INTERFACE
+            desktop-app::external_zlib
             ICE
             SM
             fontconfig
