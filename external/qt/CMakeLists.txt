@@ -34,6 +34,7 @@ if (DESKTOP_APP_USE_PACKAGED)
         find_library(Qt5ThemeSupport_LIBRARY
         NAMES
             Qt5ThemeSupport
+        REQUIRED
         )
 
         find_path(Qt5ThemeSupport_INCLUDE_DIR
@@ -43,6 +44,7 @@ if (DESKTOP_APP_USE_PACKAGED)
             ${Qt5Gui_INCLUDE_DIRS}
         PATH_SUFFIXES
             QtThemeSupport/${Qt5Gui_VERSION}
+        REQUIRED
         )
 
         target_link_libraries(external_qt
@@ -200,6 +202,11 @@ else()
         foreach (lib ${qt_libs})
             list(APPEND qt_libs_list "${qt_loc}/${lib}${qt_lib_suffix}")
         endforeach()
+        target_link_libraries(external_qt
+        INTERFACE
+            desktop-app::external_jpeg
+            desktop-app::external_zlib
+        )
     elseif (APPLE)
         if (NOT build_osx)
             set(qt_libs
@@ -233,6 +240,7 @@ else()
         endforeach()
         target_link_libraries(external_qt
         INTERFACE
+            desktop-app::external_jpeg
             desktop-app::external_zlib
             cups
         )
@@ -352,6 +360,7 @@ else()
         endif()
         target_link_libraries(external_qt
         INTERFACE
+            desktop-app::external_jpeg
             desktop-app::external_zlib
             ICE
             SM
