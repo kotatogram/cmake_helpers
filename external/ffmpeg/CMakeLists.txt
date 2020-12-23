@@ -68,7 +68,7 @@ else()
             va-drm
             va
             vdpau
-            wayland-client
+            Xv
             Xext
             Xfixes
         )

@@ -7,6 +7,8 @@
 add_library(external_qt INTERFACE IMPORTED GLOBAL)
 add_library(desktop-app::external_qt ALIAS external_qt)
 
+add_subdirectory(qt_static_plugins)
+
 if (DESKTOP_APP_USE_PACKAGED)
     target_link_libraries(external_qt
     INTERFACE
@@ -24,10 +26,6 @@ if (DESKTOP_APP_USE_PACKAGED)
 
     if (Qt5DBus_FOUND)
         target_link_libraries(external_qt INTERFACE Qt5::DBus)
-    endif()
-
-    if (Qt5Svg_FOUND)
-        target_link_libraries(external_qt INTERFACE Qt5::Svg)
     endif()
 
     if (LINUX AND DESKTOP_APP_USE_PACKAGED_LAZY_PLATFORMTHEMES)
@@ -113,16 +111,21 @@ else()
         )
     endif()
 
+    if (Qt5WaylandClient_FOUND)
+        target_include_directories(external_qt SYSTEM
+        INTERFACE
+            ${qt_loc}/include/QtWaylandClient
+            ${qt_loc}/include/QtWaylandClient/${qt_version}
+            ${qt_loc}/include/QtWaylandClient/${qt_version}/QtWaylandClient
+        )
+    endif()
+
     if (LINUX)
         target_include_directories(external_qt SYSTEM
         INTERFACE
-            ${qt_loc}/include/QtSvg
             ${qt_loc}/include/QtThemeSupport
-            ${qt_loc}/include/QtWaylandClient
             ${qt_loc}/include/QtThemeSupport/${qt_version}
-            ${qt_loc}/include/QtWaylandClient/${qt_version}
             ${qt_loc}/include/QtThemeSupport/${qt_version}/QtThemeSupport
-            ${qt_loc}/include/QtWaylandClient/${qt_version}/QtWaylandClient
         )
     endif()
 
@@ -151,12 +154,17 @@ else()
         )
     endif()
 
-    if (LINUX)
+    if (Qt5WaylandClient_FOUND)
         target_compile_definitions(external_qt
         INTERFACE
             QT_WAYLANDCLIENT_LIB
+        )
+    endif()
+
+    if (LINUX)
+        target_compile_definitions(external_qt
+        INTERFACE
             QT_THEME_SUPPORT_LIB
-            QT_SVG_LIB
         )
     endif()
 
@@ -202,11 +210,6 @@ else()
         foreach (lib ${qt_libs})
             list(APPEND qt_libs_list "${qt_loc}/${lib}${qt_lib_suffix}")
         endforeach()
-        target_link_libraries(external_qt
-        INTERFACE
-            desktop-app::external_jpeg
-            desktop-app::external_zlib
-        )
     elseif (APPLE)
         if (NOT build_osx)
             set(qt_libs
@@ -240,8 +243,6 @@ else()
         endforeach()
         target_link_libraries(external_qt
         INTERFACE
-            desktop-app::external_jpeg
-            desktop-app::external_zlib
             cups
         )
     else()
@@ -261,23 +262,24 @@ else()
                 plugins/bearer/${qt_lib_prefix}qnmbearer
             )
         endif()
+        set(qt_libs_waylandclient)
+        set(qt_libs_waylandclient_plugins)
+        if (Qt5WaylandClient_FOUND)
+            set(qt_libs_waylandclient lib/${qt_lib_prefix}Qt5WaylandClient)
+            set(qt_libs_waylandclient_plugins
+                plugins/wayland-decoration-client/${qt_lib_prefix}bradient
+                plugins/wayland-shell-integration/${qt_lib_prefix}wl-shell
+                plugins/wayland-shell-integration/${qt_lib_prefix}xdg-shell
+                plugins/wayland-graphics-integration-client/${qt_lib_prefix}qt-plugin-wayland-egl
+                plugins/platforms/${qt_lib_prefix}qwayland-egl
+                plugins/platforms/${qt_lib_prefix}qwayland-generic
+            )
+        endif()
         set(qt_libs
             plugins/platforminputcontexts/${qt_lib_prefix}composeplatforminputcontextplugin
             ${qt_libs_dbus_plugins}
-            plugins/wayland-decoration-client/${qt_lib_prefix}bradient
-            plugins/wayland-shell-integration/${qt_lib_prefix}ivi-shell
-            plugins/wayland-shell-integration/${qt_lib_prefix}wl-shell
-            plugins/wayland-shell-integration/${qt_lib_prefix}xdg-shell-v5
-            plugins/wayland-shell-integration/${qt_lib_prefix}xdg-shell-v6
-            plugins/wayland-shell-integration/${qt_lib_prefix}xdg-shell
-            plugins/wayland-graphics-integration-client/${qt_lib_prefix}qt-plugin-wayland-egl
-            plugins/wayland-graphics-integration-client/${qt_lib_prefix}drm-egl-server
-            plugins/wayland-graphics-integration-client/${qt_lib_prefix}dmabuf-server
-            plugins/wayland-graphics-integration-client/${qt_lib_prefix}shm-emulation-server
-            plugins/platforms/${qt_lib_prefix}qwayland-egl
-            plugins/platforms/${qt_lib_prefix}qwayland-generic
+            ${qt_libs_waylandclient_plugins}
             plugins/platforms/${qt_lib_prefix}qxcb
-            plugins/imageformats/${qt_lib_prefix}qsvg
             plugins/iconengines/${qt_lib_prefix}qsvgicon
             lib/${qt_lib_prefix}Qt5XcbQpa
             lib/${qt_lib_prefix}Qt5EglSupport
@@ -287,13 +289,13 @@ else()
             ${qt_libs_dbus_support}
             plugins/bearer/${qt_lib_prefix}qgenericbearer
             ${qt_libs_dbus_bearers}
-            lib/${qt_lib_prefix}Qt5WaylandClient
+            ${qt_libs_waylandclient}
+            lib/${qt_lib_prefix}Qt5ServiceSupport
             ${common_qt_libs}
             ${qt_libs_dbus}
             lib/${qt_lib_prefix}Qt5Svg
             lib/${qt_lib_prefix}Qt5Core
             lib/${qt_lib_prefix}qtpcre2
-            lib/${qt_lib_prefix}xcb-static
         )
         foreach (lib ${qt_libs})
             list(APPEND qt_libs_list "${qt_loc}/${lib}${qt_lib_suffix}")
@@ -305,6 +307,8 @@ else()
         ${qt_libs_list}
         $<TARGET_FILE:desktop-app::external_openssl_ssl>
         $<TARGET_FILE:desktop-app::external_openssl_crypto>
+        desktop-app::external_jpeg
+        desktop-app::external_zlib
     )
 
     if (LINUX)
@@ -345,10 +349,20 @@ else()
             wayland-client
             xkbcommon
             xkbcommon-x11
-            Xi
-            Xext
-            Xfixes
-            Xrender
+            xcb-xkb
+            xcb-randr
+            xcb-icccm
+            xcb-shm
+            xcb-render
+            xcb-image
+            xcb-xfixes
+            xcb-xinerama
+            xcb-xinput
+            xcb-shape
+            xcb-sync
+            xcb-util
+            xcb-render-util
+            xcb-keysyms
             ffi
         )
         if (DESKTOP_APP_USE_GLIBC_WRAPS)
@@ -360,10 +374,6 @@ else()
         endif()
         target_link_libraries(external_qt
         INTERFACE
-            desktop-app::external_jpeg
-            desktop-app::external_zlib
-            ICE
-            SM
             fontconfig
             freetype
             EGL
@@ -371,8 +381,8 @@ else()
             xcb
             X11
             X11-xcb
-            dl
             glib-2.0
+            ${CMAKE_DL_LIBS}
             pthread
         )
     endif()
