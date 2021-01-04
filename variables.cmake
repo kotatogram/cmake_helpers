@@ -101,7 +101,7 @@ else()
 endif()
 
 if (build_win64)
-    get_filename_component(libs_loc "../Libraries/win64" REALPATH)
+    get_filename_component(libs_loc "../Libraries64" REALPATH)
 elseif (NOT APPLE OR build_osx)
     get_filename_component(libs_loc "../Libraries" REALPATH)
 else()
