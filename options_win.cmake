@@ -16,6 +16,7 @@ INTERFACE
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(common_options
     INTERFACE
+        /bigobj # scheme.cpp and history_widget.cpp has too many sections.
         /permissive-
         # /Qspectre
         /W1
@@ -37,12 +38,6 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         $<IF:$<CONFIG:Debug>,/NODEFAULTLIB:LIBCMT,/DEBUG;/OPT:REF>
     )
 
-    if (build_win64)
-        target_compile_options(common_options
-        INTERFACE
-            /bigobj # scheme.cpp has too many sections.
-        )
-    endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_definitions(common_options
     INTERFACE

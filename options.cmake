@@ -10,6 +10,7 @@ add_library(desktop-app::common_options ALIAS common_options)
 target_compile_definitions(common_options
 INTERFACE
     $<IF:$<CONFIG:Debug>,_DEBUG,NDEBUG>
+    QT_NO_CAST_FROM_BYTEARRAY
 )
 
 if (DESKTOP_APP_DISABLE_CRASH_REPORTS)
@@ -26,6 +27,13 @@ if (DESKTOP_APP_DISABLE_DBUS_INTEGRATION)
     )
 endif()
 
+if (DESKTOP_APP_DISABLE_X11_INTEGRATION)
+    target_compile_definitions(common_options
+    INTERFACE
+        DESKTOP_APP_DISABLE_X11_INTEGRATION
+    )
+endif()
+
 if (DESKTOP_APP_DISABLE_WAYLAND_INTEGRATION)
     target_compile_definitions(common_options
     INTERFACE
@@ -33,10 +41,10 @@ if (DESKTOP_APP_DISABLE_WAYLAND_INTEGRATION)
     )
 endif()
 
-if (DESKTOP_APP_DISABLE_WEBRTC_INTEGRATION)
+if (DESKTOP_APP_DISABLE_GTK_INTEGRATION)
     target_compile_definitions(common_options
     INTERFACE
-        DESKTOP_APP_DISABLE_WEBRTC_INTEGRATION
+        DESKTOP_APP_DISABLE_GTK_INTEGRATION
     )
 endif()
 
