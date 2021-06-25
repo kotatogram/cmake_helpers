@@ -71,12 +71,14 @@ INTERFACE
     AVFoundation
     CoreAudio
     CoreVideo
+    CoreMediaIO
     QuartzCore
     AppKit
     CoreWLAN
     WebKit
     IOKit
     GSS
+    MediaPlayer
 )
 
 if (NOT build_osx)

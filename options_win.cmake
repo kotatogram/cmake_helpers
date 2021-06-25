@@ -39,6 +39,12 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         $<$<BOOL:${DESKTOP_APP_NO_PDB}>:/DEBUG:NONE>
     )
 
+    if (NOT build_win64)
+        target_link_options(common_options
+        INTERFACE
+            /LARGEADDRESSAWARE # Allow more than 2 GB in 32 bit application.ß
+        )
+    endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_definitions(common_options
     INTERFACE

@@ -8,3 +8,11 @@ add_subdirectory(external)
 if (DESKTOP_APP_USE_GLIBC_WRAPS)
     add_subdirectory(linux_glibc_wraps)
 endif()
+if (LINUX
+    AND NOT DESKTOP_APP_USE_PACKAGED
+    AND Qt5WaylandClient_FOUND)
+    add_subdirectory(linux_wayland_helper)
+endif()
+if (DESKTOP_APP_USE_ALLOCATION_TRACER)
+    add_subdirectory(linux_allocation_tracer)
+endif()
