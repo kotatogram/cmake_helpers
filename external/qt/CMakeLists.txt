@@ -157,6 +157,11 @@ else()
         foreach (lib ${qt_libs})
             list(APPEND qt_libs_list "${qt_loc}/${lib}${qt_lib_suffix}")
         endforeach()
+
+        target_link_libraries(external_qt
+        INTERFACE
+            desktop-app::external_angle
+        )
     elseif (APPLE)
         if (NOT build_osx)
             set(qt_libs
@@ -220,10 +225,17 @@ else()
                 plugins/wayland-decoration-client/${qt_lib_prefix}bradient
             )
         endif()
+        set(qt_libs_gtk_plugins)
+        if (NOT DESKTOP_APP_DISABLE_GTK_INTEGRATION)
+            set(qt_libs_gtk_plugins
+                plugins/platformthemes/${qt_lib_prefix}qgtk3
+            )
+        endif()
         set(qt_libs
             plugins/platforminputcontexts/${qt_lib_prefix}composeplatforminputcontextplugin
             ${qt_libs_dbus_plugins}
             ${qt_libs_waylandclient_plugins}
+            ${qt_libs_gtk_plugins}
             plugins/platforms/${qt_lib_prefix}qxcb
             plugins/xcbglintegrations/${qt_lib_prefix}qxcb-egl-integration
             plugins/xcbglintegrations/${qt_lib_prefix}qxcb-glx-integration
@@ -287,26 +299,6 @@ else()
                 -Wl,--no-as-needed,-lrt
             )
         endif()
-        if (DESKTOP_APP_USE_GLIBC_WRAPS)
-            target_link_options(external_qt
-            INTERFACE
-                -Wl,-wrap,aligned_alloc
-                -Wl,-wrap,secure_getenv
-                -Wl,-wrap,clock_gettime
-                -Wl,--no-as-needed,-lrt
-            )
-            if (NOT build_linux32)
-                target_link_options(external_qt
-                INTERFACE
-                    -Wl,-wrap,__divmodti4
-                )
-            else()
-                target_link_options(external_qt
-                INTERFACE
-                    -Wl,-wrap,__divmoddi4
-                )
-            endif()
-        endif()
         target_link_static_libraries(external_qt
         INTERFACE
             proxy
@@ -335,18 +327,18 @@ else()
                 $<TARGET_FILE:desktop-app::linux_allocation_tracer>
             )
         endif()
-        if (DESKTOP_APP_USE_GLIBC_WRAPS)
-            target_link_libraries(external_qt
-            INTERFACE
-                desktop-app::linux_glibc_wraps
-                $<TARGET_FILE:desktop-app::linux_glibc_wraps>
-            )
-        endif()
         if (Qt5WaylandClient_FOUND)
             target_link_libraries(external_qt
             INTERFACE
                 desktop-app::linux_wayland_helper
                 $<TARGET_FILE:desktop-app::linux_wayland_helper>
+            )
+        endif()
+        if (NOT DESKTOP_APP_DISABLE_GTK_INTEGRATION)
+            target_link_libraries(external_qt
+            INTERFACE
+                desktop-app::linux_gtk_helper
+                $<TARGET_FILE:desktop-app::linux_gtk_helper>
             )
         endif()
         target_link_libraries(external_qt
