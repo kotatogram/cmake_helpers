@@ -63,17 +63,17 @@ if (DESKTOP_APP_USE_PACKAGED_LAZY)
     )
 endif()
 
+if (DESKTOP_APP_DISABLE_WEBKITGTK)
+    target_compile_definitions(common_options
+    INTERFACE
+        DESKTOP_APP_DISABLE_WEBKITGTK
+    )
+endif()
+
 if (DESKTOP_APP_USE_PACKAGED_FONTS)
     target_compile_definitions(common_options
     INTERFACE
         DESKTOP_APP_USE_PACKAGED_FONTS
-    )
-endif()
-
-if (rlottie_FOUND OR RLOTTIE_FOUND)
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_USE_PACKAGED_RLOTTIE
     )
 endif()
 
