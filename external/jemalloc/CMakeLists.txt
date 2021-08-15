@@ -18,7 +18,6 @@ endif()
 
 if (NOT JEMALLOC_FOUND)
     add_library(external_jemalloc_bundled STATIC IMPORTED GLOBAL)
-    set(jemalloc_loc ${third_party_loc}/jemalloc)
 
     include(ExternalProject)
     ExternalProject_Add(jemalloc
@@ -29,15 +28,18 @@ if (NOT JEMALLOC_FOUND)
         BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/jemalloc-prefix/src/jemalloc/lib/libjemalloc.a
     )
 
-    file(MAKE_DIRECTORY "${jemalloc_loc}/include")
+    ExternalProject_Get_property(jemalloc SOURCE_DIR)
+    ExternalProject_Get_property(jemalloc BINARY_DIR)
+
+    file(MAKE_DIRECTORY "${SOURCE_DIR}/include")
 
     set_target_properties(external_jemalloc_bundled PROPERTIES
-        IMPORTED_LOCATION "${jemalloc_loc}/lib/libjemalloc.a"
+        IMPORTED_LOCATION "${BINARY_DIR}/lib/libjemalloc.a"
     )
 
     target_include_directories(external_jemalloc_bundled SYSTEM
     INTERFACE
-        ${jemalloc_loc}/include
+        ${SOURCE_DIR}/include
     )
 
     target_link_libraries(external_jemalloc_bundled
