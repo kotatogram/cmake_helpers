@@ -18,28 +18,26 @@ endif()
 
 if (NOT JEMALLOC_FOUND)
     add_library(external_jemalloc_bundled STATIC IMPORTED GLOBAL)
+    set(jemalloc_loc ${third_party_loc}/jemalloc)
 
     include(ExternalProject)
     ExternalProject_Add(jemalloc
-        URL https://github.com/jemalloc/jemalloc/releases/download/5.2.1/jemalloc-5.2.1.tar.bz2
-        CONFIGURE_COMMAND cd "${CMAKE_CURRENT_BINARY_DIR}/jemalloc-prefix/src/jemalloc" && ./configure
+        SOURCE_DIR ${jemalloc_loc}
+        CONFIGURE_COMMAND cd "${jemalloc_loc}" && ./autogen.sh
         INSTALL_COMMAND :
         BUILD_IN_SOURCE 1
-        BUILD_BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/jemalloc-prefix/src/jemalloc/lib/libjemalloc.a
+        BUILD_BYPRODUCTS ${jemalloc_loc}/lib/libjemalloc.a
     )
 
-    ExternalProject_Get_property(jemalloc SOURCE_DIR)
-    ExternalProject_Get_property(jemalloc BINARY_DIR)
-
-    file(MAKE_DIRECTORY "${SOURCE_DIR}/include")
+    file(MAKE_DIRECTORY "${jemalloc_loc}/include")
 
     set_target_properties(external_jemalloc_bundled PROPERTIES
-        IMPORTED_LOCATION "${BINARY_DIR}/lib/libjemalloc.a"
+        IMPORTED_LOCATION "${jemalloc_loc}/lib/libjemalloc.a"
     )
 
     target_include_directories(external_jemalloc_bundled SYSTEM
     INTERFACE
-        ${SOURCE_DIR}/include
+        ${jemalloc_loc}/include
     )
 
     target_link_libraries(external_jemalloc_bundled
