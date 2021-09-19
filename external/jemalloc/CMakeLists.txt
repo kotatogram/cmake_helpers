@@ -7,12 +7,22 @@
 add_library(external_jemalloc INTERFACE IMPORTED GLOBAL)
 add_library(desktop-app::external_jemalloc ALIAS external_jemalloc)
 
+if (CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
+    return()
+endif()
+
 if (DESKTOP_APP_USE_PACKAGED)
     find_package(PkgConfig REQUIRED)
     pkg_check_modules(JEMALLOC IMPORTED_TARGET jemalloc)
 
     if (JEMALLOC_FOUND)
-        target_link_libraries(external_jemalloc INTERFACE PkgConfig::JEMALLOC)
+        target_link_libraries(external_jemalloc
+        INTERFACE
+            -Wl,--no-as-needed
+            PkgConfig::JEMALLOC
+            ${JEMALLOC_LINK_LIBRARIES}
+            -Wl,--as-needed
+        )
     endif()
 endif()
 
@@ -23,7 +33,7 @@ if (NOT JEMALLOC_FOUND)
     include(ExternalProject)
     ExternalProject_Add(jemalloc
         SOURCE_DIR ${jemalloc_loc}
-        CONFIGURE_COMMAND cd "${jemalloc_loc}" && ./autogen.sh
+        CONFIGURE_COMMAND cd "${jemalloc_loc}" && CC=clang CXX=clang++ EXTRA_CFLAGS=-fPIE EXTRA_CXXFLAGS=-fPIE ./autogen.sh
         INSTALL_COMMAND :
         BUILD_IN_SOURCE 1
         BUILD_BYPRODUCTS ${jemalloc_loc}/lib/libjemalloc.a
@@ -42,7 +52,7 @@ if (NOT JEMALLOC_FOUND)
 
     target_link_libraries(external_jemalloc_bundled
     INTERFACE
-        dl
+        ${CMAKE_DL_LIBS}
         pthread
     )
 

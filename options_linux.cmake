@@ -17,6 +17,11 @@ INTERFACE
     -Wno-sign-compare
 )
 
+target_link_options(common_options
+INTERFACE
+    -Wl,--as-needed
+)
+
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(common_options
     INTERFACE
@@ -59,7 +64,7 @@ if (DESKTOP_APP_USE_ALLOCATION_TRACER)
         -Wl,-wrap,aligned_alloc
         -Wl,-wrap,posix_memalign
         -Wl,-wrap,free
-        -Wl,--no-as-needed,-lrt
+        -Wl,--no-as-needed,-lrt,--as-needed
     )
     target_link_libraries(common_options
     INTERFACE
@@ -73,6 +78,7 @@ if (NOT DESKTOP_APP_USE_PACKAGED)
         target_link_options(common_options
         INTERFACE
             -static-libstdc++
+            -static-libgcc
         )
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         target_link_static_libraries(common_options
@@ -89,6 +95,7 @@ if (NOT DESKTOP_APP_USE_PACKAGED)
     INTERFACE
         -pthread
         -rdynamic
+        -fwhole-program
     )
 endif()
 

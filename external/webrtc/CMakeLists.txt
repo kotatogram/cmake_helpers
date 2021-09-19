@@ -93,10 +93,6 @@ else()
         target_link_libraries(external_webrtc
         INTERFACE
             Secur32.lib # Required for rtc_base/http_common.cc
-            dmoguids.lib # Required for the built-in WASAPI AEC, see modules/audio_device/BUILD.gn
-            wmcodecdspuuid.lib
-            amstrmid.lib
-            msdmo.lib
         )
     elseif (APPLE)
         target_link_libraries(external_webrtc
@@ -114,6 +110,13 @@ else()
             Xrandr
             Xrender
             Xtst
+        )
+        target_link_libraries(external_webrtc
+        INTERFACE
+            X11
+            gio-2.0
+            gobject-2.0
+            glib-2.0
         )
     endif()
 endif()

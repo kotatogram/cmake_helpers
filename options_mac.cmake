@@ -14,7 +14,7 @@ endif()
 if (NOT DESKTOP_APP_USE_PACKAGED)
     target_include_directories(common_options SYSTEM
     INTERFACE
-        /usr/local/macos/include
+        ${libs_loc}/local/include
     )
 endif()
 
@@ -35,7 +35,6 @@ INTERFACE
     -Wno-sign-compare
     -Wno-unknown-attributes
     -Wno-pragma-system-header-outside-header
-    -Wno-range-loop-analysis
 )
 
 if (DESKTOP_APP_SPECIAL_TARGET)

@@ -64,6 +64,7 @@ else()
     if (LINUX)
         target_link_static_libraries(external_ffmpeg
         INTERFACE
+            lzma
             va-x11
             va-drm
             va
@@ -71,11 +72,11 @@ else()
             Xv
             Xext
             Xfixes
+            drm
         )
         target_link_libraries(external_ffmpeg
         INTERFACE
             X11
-            drm
             pthread
         )
     endif()

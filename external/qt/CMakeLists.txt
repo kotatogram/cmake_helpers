@@ -212,17 +212,11 @@ else()
                 plugins/wayland-decoration-client/${qt_lib_prefix}bradient
             )
         endif()
-        set(qt_libs_gtk_plugins)
-        if (NOT DESKTOP_APP_DISABLE_GTK_INTEGRATION)
-            set(qt_libs_gtk_plugins
-                plugins/platformthemes/${qt_lib_prefix}qgtk3
-            )
-        endif()
         set(qt_libs
             plugins/platforminputcontexts/${qt_lib_prefix}composeplatforminputcontextplugin
             ${qt_libs_dbus_plugins}
             ${qt_libs_waylandclient_plugins}
-            ${qt_libs_gtk_plugins}
+            plugins/platformthemes/${qt_lib_prefix}qgtk3
             plugins/platforms/${qt_lib_prefix}qxcb
             plugins/xcbglintegrations/${qt_lib_prefix}qxcb-egl-integration
             plugins/xcbglintegrations/${qt_lib_prefix}qxcb-glx-integration
@@ -265,6 +259,7 @@ else()
         target_link_static_libraries(external_qt
         INTERFACE
             proxy
+            epoxy
             xkbcommon
             xkbcommon-x11
             xcb-glx
@@ -282,6 +277,7 @@ else()
             xcb-util
             xcb-render-util
             xcb-keysyms
+            z
         )
         if (Qt5WaylandClient_FOUND)
             target_link_libraries(external_qt
@@ -290,23 +286,17 @@ else()
                 $<TARGET_FILE:desktop-app::linux_wayland_helper>
             )
         endif()
-        if (NOT DESKTOP_APP_DISABLE_GTK_INTEGRATION)
-            target_link_libraries(external_qt
-            INTERFACE
-                desktop-app::linux_gtk_helper
-                $<TARGET_FILE:desktop-app::linux_gtk_helper>
-            )
-        endif()
         target_link_libraries(external_qt
         INTERFACE
+            desktop-app::linux_gtk_helper
+            $<TARGET_FILE:desktop-app::linux_gtk_helper>
+            desktop-app::linux_glib_helper
+            $<TARGET_FILE:desktop-app::linux_glib_helper>
             fontconfig
             freetype
-            EGL
-            GL
             xcb
             X11
             X11-xcb
-            glib-2.0
             ${CMAKE_DL_LIBS}
             pthread
         )
