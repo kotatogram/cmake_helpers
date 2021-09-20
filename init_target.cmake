@@ -47,9 +47,9 @@ function(init_target target_name) # init_target(my_target folder_name)
     endif()
     if (DESKTOP_APP_SPECIAL_TARGET AND WIN32)
         set_target_properties(${target_name} PROPERTIES
-            INTERPROCEDURAL_OPTIMIZATION_RELEASE False
-            INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO False
-            INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL False
+            INTERPROCEDURAL_OPTIMIZATION_RELEASE True
+            INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO True
+            INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL True
         )
     endif()
 endfunction()
