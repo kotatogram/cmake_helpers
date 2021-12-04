@@ -8,13 +8,22 @@ https://github.com/desktop-app/legal/blob/master/LEGAL
 #include <QtCore/QtPlugin>
 
 #ifndef DESKTOP_APP_USE_PACKAGED
-Q_IMPORT_PLUGIN(QGenericEnginePlugin)
-Q_IMPORT_PLUGIN(QWebpPlugin)
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
 
-#if QT_VERSION >= QT_VERSION_CHECK(5, 8, 0)
+#ifdef Q_OS_MAC
+Q_IMPORT_PLUGIN(QSecureTransportBackend)
+Q_IMPORT_PLUGIN(QSCNetworkReachabilityNetworkInformationBackendFactory)
+#else // Q_OS_MAC
+Q_IMPORT_PLUGIN(QTlsBackendOpenSSL)
+#endif // Q_OS_MAC
+
+#else // Qt >= 6.0.0
+Q_IMPORT_PLUGIN(QGenericEnginePlugin)
+#endif // Qt < 6.0.0
+
+Q_IMPORT_PLUGIN(QWebpPlugin)
 Q_IMPORT_PLUGIN(QJpegPlugin)
 Q_IMPORT_PLUGIN(QGifPlugin)
-#endif // Qt 5.8.0
 
 #ifdef Q_OS_WIN
 Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin)
@@ -27,15 +36,16 @@ Q_IMPORT_PLUGIN(QXcbGlxIntegrationPlugin)
 Q_IMPORT_PLUGIN(QComposePlatformInputContextPlugin)
 Q_IMPORT_PLUGIN(QSvgIconPlugin)
 #ifndef DESKTOP_APP_DISABLE_DBUS_INTEGRATION
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
 Q_IMPORT_PLUGIN(QConnmanEnginePlugin)
 Q_IMPORT_PLUGIN(QNetworkManagerEnginePlugin)
+#endif // Qt < 6.0.0
 Q_IMPORT_PLUGIN(QIbusPlatformInputContextPlugin)
 #endif // !DESKTOP_APP_DISABLE_DBUS_INTEGRATION
 #ifndef DESKTOP_APP_DISABLE_WAYLAND_INTEGRATION
 Q_IMPORT_PLUGIN(QWaylandIntegrationPlugin)
 Q_IMPORT_PLUGIN(QWaylandEglPlatformIntegrationPlugin)
 Q_IMPORT_PLUGIN(QWaylandEglClientBufferPlugin)
-Q_IMPORT_PLUGIN(QWaylandWlShellIntegrationPlugin)
 Q_IMPORT_PLUGIN(QWaylandBradientDecorationPlugin)
 #endif // !DESKTOP_APP_DISABLE_WAYLAND_INTEGRATION
 Q_IMPORT_PLUGIN(QGtk3ThemePlugin)

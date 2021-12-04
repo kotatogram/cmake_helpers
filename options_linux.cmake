@@ -6,6 +6,8 @@
 
 target_compile_options(common_options
 INTERFACE
+    -fstack-protector-all
+    -fstack-clash-protection
     -fPIC
     $<IF:$<CONFIG:Debug>,,-fno-strict-aliasing>
     -pipe
@@ -17,6 +19,11 @@ INTERFACE
     -Wno-sign-compare
 )
 
+target_compile_definitions(common_options
+INTERFACE
+    $<IF:$<CONFIG:Debug>,,_FORTIFY_SOURCE=2>
+)
+
 target_link_options(common_options
 INTERFACE
     -Wl,--as-needed
@@ -26,6 +33,14 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     target_compile_options(common_options
     INTERFACE
         -Wno-maybe-uninitialized
+    )
+endif()
+
+# TODO: Remove when there will be no Qt 5 support
+if (DESKTOP_APP_QT6)
+    target_compile_options(common_options
+    INTERFACE
+        -Wno-deprecated-declarations
     )
 endif()
 
@@ -96,6 +111,9 @@ if (NOT DESKTOP_APP_USE_PACKAGED)
         -pthread
         -rdynamic
         -fwhole-program
+        -Wl,-z,relro
+        -Wl,-z,now
+        # -pie # https://gitlab.gnome.org/GNOME/nautilus/-/issues/1601
     )
 endif()
 

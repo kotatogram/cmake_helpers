@@ -101,8 +101,10 @@ INTERFACE
     Userenv
     Version
     Dwmapi
+    UxTheme
     Wtsapi32
     Crypt32
+    Propsys
 )
 
 if (build_winstore)
