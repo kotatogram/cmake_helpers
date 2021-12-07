@@ -5,9 +5,6 @@
 # https://github.com/desktop-app/legal/blob/master/LEGAL
 
 set(MAXIMUM_CXX_STANDARD cxx_std_20)
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(MAXIMUM_CXX_STANDARD cxx_std_17)
-endif()
 
 function(init_target_folder target_name folder_name)
     if (NOT "${folder_name}" STREQUAL "")
@@ -45,7 +42,7 @@ function(init_target target_name) # init_target(my_target folder_name)
             XCODE_ATTRIBUTE_LLVM_LTO $<IF:$<CONFIG:Debug>,NO,YES>
         )
     endif()
-    if (DESKTOP_APP_SPECIAL_TARGET AND WIN32)
+    if (DESKTOP_APP_SPECIAL_TARGET AND WIN32 AND NOT build_win64)
         set_target_properties(${target_name} PROPERTIES
             INTERPROCEDURAL_OPTIMIZATION_RELEASE True
             INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO True
