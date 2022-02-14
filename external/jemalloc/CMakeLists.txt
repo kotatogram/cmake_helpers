@@ -13,21 +13,22 @@ endif()
 
 if (DESKTOP_APP_USE_PACKAGED)
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(JEMALLOC IMPORTED_TARGET jemalloc)
+    pkg_check_modules(JEMALLOC jemalloc)
 
     if (JEMALLOC_FOUND)
+        target_include_directories(external_jemalloc SYSTEM
+        INTERFACE
+            ${JEMALLOC_INCLUDE_DIRS}
+        )
+
         target_link_libraries(external_jemalloc
         INTERFACE
-            -Wl,--no-as-needed
-            PkgConfig::JEMALLOC
-            ${JEMALLOC_LINK_LIBRARIES}
-            -Wl,--as-needed
+            -Wl,--push-state,--no-as-needed,${JEMALLOC_LINK_LIBRARIES},--pop-state
         )
+
         return()
     endif()
 endif()
-
-add_library(external_jemalloc_bundled STATIC IMPORTED)
 
 include(ExternalProject)
 ExternalProject_Add(jemalloc
@@ -42,27 +43,14 @@ ExternalProject_Add(jemalloc
 ExternalProject_Get_property(jemalloc SOURCE_DIR)
 file(MAKE_DIRECTORY "${SOURCE_DIR}/include")
 
-set_target_properties(external_jemalloc_bundled PROPERTIES
-    IMPORTED_LOCATION "${SOURCE_DIR}/lib/libjemalloc.a"
-)
-
-target_include_directories(external_jemalloc_bundled SYSTEM
+target_include_directories(external_jemalloc SYSTEM
 INTERFACE
     ${SOURCE_DIR}/include
 )
 
-target_link_libraries(external_jemalloc_bundled
-INTERFACE
-    ${CMAKE_DL_LIBS}
-    pthread
-)
-
-add_dependencies(external_jemalloc_bundled jemalloc-build)
-
 target_link_libraries(external_jemalloc
 INTERFACE
-    -Wl,--whole-archive
-    $<TARGET_FILE:external_jemalloc_bundled>
-    -Wl,--no-whole-archive
-    external_jemalloc_bundled
+    -Wl,--push-state,--whole-archive,${SOURCE_DIR}/lib/libjemalloc.a,--pop-state,-ldl
 )
+
+add_dependencies(external_jemalloc jemalloc-build)

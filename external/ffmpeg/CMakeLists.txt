@@ -39,25 +39,14 @@ else()
         ${ffmpeg_lib_loc}/libswresample/libswresample.a
         ${ffmpeg_lib_loc}/libswscale/libswscale.a
         ${ffmpeg_lib_loc}/libavutil/libavutil.a
+        $<LINK_ONLY:desktop-app::external_opus>
         $<TARGET_FILE:desktop-app::external_opus>
+        $<LINK_ONLY:desktop-app::external_vpx>
+        $<TARGET_FILE:desktop-app::external_vpx>
     )
-    if (LINUX)
-        target_link_static_libraries(external_ffmpeg
-        INTERFACE
-            lzma
-            va-x11
-            va-drm
-            va
-            vdpau
-            Xv
-            Xext
-            Xfixes
-            drm
-        )
-        target_link_libraries(external_ffmpeg
-        INTERFACE
-            X11
-            pthread
-        )
+    if (APPLE)
+        target_link_libraries(external_ffmpeg INTERFACE bz2)
+    elseif (LINUX)
+        target_link_static_libraries(external_ffmpeg INTERFACE lzma)
     endif()
 endif()
