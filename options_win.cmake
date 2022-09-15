@@ -27,6 +27,7 @@ INTERFACE
 if (MSVC)
     target_compile_options(common_options
     INTERFACE
+        /bigobj # scheme.cpp and history_widget.cpp has too many sections.
         /permissive-
         # /Qspectre
         /utf-8
