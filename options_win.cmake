@@ -16,6 +16,7 @@ INTERFACE
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(common_options
     INTERFACE
+        /bigobj # scheme.cpp and history_widget.cpp has too many sections.
         /permissive-
         # /Qspectre
         /W1
@@ -39,12 +40,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         $<$<BOOL:${DESKTOP_APP_NO_PDB}>:/DEBUG:NONE>
     )
 
-    if (build_win64)
-        target_compile_options(common_options
-        INTERFACE
-            /bigobj # scheme.cpp has too many sections.
-        )
-    else()
+    if (NOT build_win64)
         # target_compile_options(common_options
         # INTERFACE
         #     /fp:except # Crash-report fp exceptions in 32 bit build.
