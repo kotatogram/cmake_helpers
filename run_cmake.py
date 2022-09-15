@@ -22,6 +22,8 @@ def run(project, arguments, buildType=''):
             if arg.startswith('-G'):
                 explicitGenerator = True
             cmake.append(arg)
+    if sys.platform == 'win32' and (vsArch == 'x64' or os.environ['Platform'] == 'x64'):
+        basePath = scriptPath + '/../out64/' + buildType
     if sys.platform == 'win32' and not explicitGenerator:
         if vsArch == 'x64':
             cmake.append('-Ax64')
