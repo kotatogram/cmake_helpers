@@ -44,7 +44,7 @@ else()
 endif()
 
 if (build_win64)
-    get_filename_component(libs_loc "../Libraries/win64" REALPATH)
+    get_filename_component(libs_loc "../Libraries64" REALPATH)
 else()
     get_filename_component(libs_loc "../Libraries" REALPATH)
 endif()

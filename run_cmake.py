@@ -25,6 +25,7 @@ def run(project, arguments, buildType=''):
     if sys.platform == 'win32':
         if windowsArch == 'x64':
             cmake.append('-Ax64')
+            basePath = scriptPath + '/../out64/' + buildType
         else:
             cmake.append('-AWin32') # default
     elif windowsArch != '':
