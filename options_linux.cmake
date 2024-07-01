@@ -6,68 +6,97 @@
 
 target_compile_options(common_options
 INTERFACE
-    -fstack-protector-all
-    -fstack-clash-protection
     -fPIC
-    $<IF:$<CONFIG:Debug>,,-fno-strict-aliasing>
+    $<$<NOT:$<CONFIG:Debug>>:-fno-strict-aliasing>
     -pipe
+)
+
+target_compile_options_if_exists(common_options
+INTERFACE
     -Wall
-    -W
+    -Wextra
     -Wno-unused-parameter
     -Wno-switch
+    -Wno-maybe-uninitialized
     -Wno-missing-field-initializers
     -Wno-sign-compare
     -Wno-deprecated # implicit capture of 'this' via '[=]' is deprecated in C++20
 )
 
-target_compile_definitions(common_options
+target_link_options_if_exists(common_options
 INTERFACE
-    $<IF:$<CONFIG:Debug>,,_FORTIFY_SOURCE=2>
-    _GLIBCXX_ASSERTIONS
-)
-
-target_link_options(common_options
-INTERFACE
+    -Wno-alloc-size-larger-than # Qt + LTO
+    -Wno-stringop-overflow # Qt + LTO
+    -Wno-odr # Qt + LTO
+    -Wno-inline # OpenAL + LTO
+    -pthread
     -Wl,--as-needed
 )
-
-if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(common_options
-    INTERFACE
-        -Wno-maybe-uninitialized
-    )
-endif()
-
-# TODO: Remove when there will be no Qt 5 support
-if (DESKTOP_APP_QT6)
-    target_compile_options(common_options
-    INTERFACE
-        -Wno-deprecated-declarations
-    )
-endif()
 
 if (DESKTOP_APP_SPECIAL_TARGET)
     target_compile_options(common_options
     INTERFACE
-        $<IF:$<CONFIG:Debug>,,-Ofast>
         -Werror
+        $<$<NOT:$<CONFIG:Debug>>:-g>
+        $<$<NOT:$<CONFIG:Debug>>:-flto=auto>
     )
-
     target_link_options(common_options
     INTERFACE
-        $<IF:$<CONFIG:Debug>,,-Ofast>
+        $<$<NOT:$<CONFIG:Debug>>:-flto=auto>
+        $<$<NOT:$<CONFIG:Debug>>:-fwhole-program>
     )
-
-    target_compile_options(common_options INTERFACE $<IF:$<CONFIG:Debug>,,-g -flto>)
-    target_link_options(common_options INTERFACE $<IF:$<CONFIG:Debug>,,-g -flto -fuse-linker-plugin>)
 endif()
 
-target_link_libraries(common_options
-INTERFACE
-    $<TARGET_OBJECTS:desktop-app::linux_jemalloc_helper>
-    $<LINK_ONLY:desktop-app::external_jemalloc>
-    ${CMAKE_DL_LIBS}
-)
+if (NOT DESKTOP_APP_USE_PACKAGED)
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+        target_link_options(common_options
+        INTERFACE
+            -static-libstdc++
+        )
+    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        target_link_static_libraries(common_options
+        INTERFACE
+            c++
+            c++abi
+        )
+        target_link_options(common_options
+        INTERFACE
+            -nostdlib++
+        )
+    endif()
+    set(interprocedural_optimization_config $<TARGET_PROPERTY:INTERPROCEDURAL_OPTIMIZATION_$<UPPER_CASE:$<CONFIG>>>)
+    set(interprocedural_optimization_value_on -fwhole-program)
+    set(interprocedural_optimization_value_off -fuse-ld=lld -fno-use-linker-plugin)
+    set(interprocedural_optimization_values ${interprocedural_optimization_value_on},$<$<OR:$<NOT:$<BOOL:${DESKTOP_APP_SPECIAL_TARGET}>>,$<CONFIG:Debug>>:${interprocedural_optimization_value_off}>)
+    target_link_options(common_options
+    INTERFACE
+        $<IF:$<NOT:$<STREQUAL:${interprocedural_optimization_config},>>,$<IF:$<BOOL:${interprocedural_optimization_config}>,${interprocedural_optimization_values}>,$<IF:$<BOOL:$<TARGET_PROPERTY:INTERPROCEDURAL_OPTIMIZATION>>,${interprocedural_optimization_values}>>
+        -rdynamic
+        -Wl,-z,muldefs
+    )
+endif()
+
+if (NOT DESKTOP_APP_USE_PACKAGED OR DESKTOP_APP_SPECIAL_TARGET)
+    target_compile_options_if_exists(common_options
+    INTERFACE
+        -fno-omit-frame-pointer
+        -fstack-protector-all
+        -fstack-clash-protection
+        -fcf-protection
+    )
+    target_link_options(common_options
+    INTERFACE
+        -Wl,-z,relro
+        -Wl,-z,now
+        -Wl,-z,noexecstack
+        -pie
+    )
+    target_compile_definitions(common_options
+    INTERFACE
+        $<$<NOT:$<CONFIG:Debug>>:_FORTIFY_SOURCE=3>
+        _GLIBCXX_ASSERTIONS
+    )
+endif()
 
 if (DESKTOP_APP_USE_ALLOCATION_TRACER)
     target_link_options(common_options
@@ -92,38 +121,7 @@ if (DESKTOP_APP_USE_ALLOCATION_TRACER)
     )
 endif()
 
-if (DESKTOP_APP_USE_PACKAGED)
-    set(THREADS_PREFER_PTHREAD_FLAG ON)
-    find_package(Threads REQUIRED)
-    target_link_libraries(common_options
-    INTERFACE
-        Threads::Threads
-    )
-else()
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-        target_link_options(common_options
-        INTERFACE
-            -static-libstdc++
-            -static-libgcc
-        )
-    elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        target_link_static_libraries(common_options
-        INTERFACE
-            c++
-            c++abi
-        )
-        target_link_options(common_options
-        INTERFACE
-            -nostdlib++
-        )
-    endif()
-    target_link_options(common_options
-    INTERFACE
-        -pthread
-        -rdynamic
-        -fwhole-program
-        -Wl,-z,relro
-        -Wl,-z,now
-        # -pie # https://gitlab.gnome.org/GNOME/nautilus/-/issues/1601
-    )
-endif()
+target_link_libraries(common_options
+INTERFACE
+    ${CMAKE_DL_LIBS}
+)

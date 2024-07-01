@@ -43,3 +43,23 @@ PRIVATE
     desktop-app::external_hime_im_client
     desktop-app::external_qt
 )
+
+add_library(external_hime_qt_init OBJECT)
+add_library(desktop-app::external_hime_qt_init ALIAS external_hime_qt_init)
+init_target(external_hime_qt_init "(external)")
+
+nice_target_sources(external_hime_qt_init ${CMAKE_CURRENT_SOURCE_DIR}
+PRIVATE
+    init.cpp
+)
+
+target_link_libraries(external_hime_qt_init
+PRIVATE
+    desktop-app::external_qt
+)
+
+target_link_libraries(external_hime_qt
+INTERFACE
+    external_hime_qt_init
+    $<TARGET_OBJECTS:external_hime_qt_init>
+)

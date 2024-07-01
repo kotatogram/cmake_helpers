@@ -48,3 +48,23 @@ target_link_libraries(external_nimf_qt5
 PRIVATE
     desktop-app::external_qt
 )
+
+add_library(external_nimf_qt5_init OBJECT)
+add_library(desktop-app::external_nimf_qt5_init ALIAS external_nimf_qt5_init)
+init_target(external_nimf_qt5_init "(external)")
+
+nice_target_sources(external_nimf_qt5_init ${CMAKE_CURRENT_SOURCE_DIR}
+PRIVATE
+    init.cpp
+)
+
+target_link_libraries(external_nimf_qt5_init
+PRIVATE
+    desktop-app::external_qt
+)
+
+target_link_libraries(external_nimf_qt5
+INTERFACE
+    external_nimf_qt5_init
+    $<TARGET_OBJECTS:external_nimf_qt5_init>
+)

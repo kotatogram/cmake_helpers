@@ -5,17 +5,6 @@
 # https://github.com/desktop-app/legal/blob/master/LEGAL
 
 add_subdirectory(external)
-if (LINUX)
-    add_subdirectory(linux_jemalloc_helper)
-endif()
-if (LINUX AND NOT DESKTOP_APP_USE_PACKAGED)
-    add_subdirectory(linux_xcb_helper)
-endif()
-if (LINUX
-    AND NOT DESKTOP_APP_USE_PACKAGED
-    AND NOT DESKTOP_APP_DISABLE_WAYLAND_INTEGRATION)
-    add_subdirectory(linux_wayland_helper)
-endif()
 if (DESKTOP_APP_USE_ALLOCATION_TRACER)
     add_subdirectory(linux_allocation_tracer)
 endif()

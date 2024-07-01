@@ -13,68 +13,13 @@ INTERFACE
     QT_NO_KEYWORDS
     QT_NO_CAST_FROM_BYTEARRAY
     QT_IMPLICIT_QCHAR_CONSTRUCTION
+    QT_DEPRECATED_WARNINGS_SINCE=0x051500
 )
-
-if (DESKTOP_APP_DISABLE_CRASH_REPORTS)
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_DISABLE_CRASH_REPORTS
-    )
-endif()
-
-if (DESKTOP_APP_DISABLE_DBUS_INTEGRATION)
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_DISABLE_DBUS_INTEGRATION
-    )
-endif()
 
 if (DESKTOP_APP_DISABLE_X11_INTEGRATION)
     target_compile_definitions(common_options
     INTERFACE
         DESKTOP_APP_DISABLE_X11_INTEGRATION
-    )
-endif()
-
-if (DESKTOP_APP_DISABLE_WAYLAND_INTEGRATION)
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_DISABLE_WAYLAND_INTEGRATION
-    )
-endif()
-
-if (DESKTOP_APP_USE_PACKAGED)
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_USE_PACKAGED
-    )
-endif()
-
-if (DESKTOP_APP_USE_PACKAGED_LAZY)
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_USE_PACKAGED_LAZY
-    )
-endif()
-
-if (DESKTOP_APP_USE_PACKAGED_FONTS)
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_USE_PACKAGED_FONTS
-    )
-endif()
-
-if (DESKTOP_APP_USE_PACKAGED_RLOTTIE)
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_USE_PACKAGED_RLOTTIE
-    )
-endif()
-
-if (NOT DESKTOP_APP_SPECIAL_TARGET STREQUAL "")
-    target_compile_definitions(common_options
-    INTERFACE
-        DESKTOP_APP_SPECIAL_TARGET=${DESKTOP_APP_SPECIAL_TARGET}
     )
 endif()
 

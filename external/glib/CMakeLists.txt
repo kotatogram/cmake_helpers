@@ -7,33 +7,27 @@
 add_library(external_glib INTERFACE IMPORTED GLOBAL)
 add_library(desktop-app::external_glib ALIAS external_glib)
 
+function(add_cppgir) # isolate scope
+    set(BUILD_TESTING OFF)
+    set(BUILD_DOC OFF)
+    set(BUILD_EXAMPLES OFF)
+    add_subdirectory(cppgir EXCLUDE_FROM_ALL)
+endfunction()
+add_cppgir()
+
+include(generate_cppgir.cmake)
+generate_cppgir(external_glib Gio-2.0)
+
 find_package(PkgConfig REQUIRED)
-pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0)
-pkg_check_modules(GOBJECT REQUIRED IMPORTED_TARGET gobject-2.0)
-pkg_check_modules(GIO REQUIRED IMPORTED_TARGET gio-2.0)
-pkg_check_modules(GIO_UNIX REQUIRED IMPORTED_TARGET gio-unix-2.0)
+pkg_check_modules(GLIB2 REQUIRED IMPORTED_TARGET glib-2.0 gobject-2.0 gio-2.0 gio-unix-2.0)
 
-if (DESKTOP_APP_USE_PACKAGED)
-    target_link_libraries(external_glib
-    INTERFACE
-        PkgConfig::GIO_UNIX
-        PkgConfig::GIO
-        PkgConfig::GOBJECT
-        PkgConfig::GLIB2
-    )
-else()
-    target_include_directories(external_glib SYSTEM
-    INTERFACE
-        ${GIO_UNIX_INCLUDE_DIRS}
-        ${GIO_INCLUDE_DIRS}
-        ${GOBJECT_INCLUDE_DIRS}
-        ${GLIB2_INCLUDE_DIRS}
-    )
+target_link_libraries(external_glib
+INTERFACE
+    PkgConfig::GLIB2
+)
 
-    target_link_libraries(external_glib
-    INTERFACE
-        gio-2.0
-        gobject-2.0
-        glib-2.0
-    )
-endif()
+target_compile_definitions(external_glib
+INTERFACE
+    GLIB_VERSION_MIN_REQUIRED=GLIB_VERSION_2_56
+    GLIB_VERSION_MAX_ALLOWED=GLIB_VERSION_2_56
+)

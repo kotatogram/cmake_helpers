@@ -11,25 +11,26 @@ def run(project, arguments, buildType=''):
     basePath = scriptPath + '/../out/' + buildType
 
     cmake = ['cmake']
-    windowsArch = ''
+    vsArch = ''
     explicitGenerator = False
     for arg in arguments:
         if arg == 'debug':
             cmake.append('-DCMAKE_BUILD_TYPE=Debug')
         elif arg == 'x86' or arg == 'x64':
-            windowsArch = arg
+            vsArch = arg
         elif arg != 'force':
             if arg.startswith('-G'):
                 explicitGenerator = True
             cmake.append(arg)
-    if sys.platform == 'win32':
-        if windowsArch == 'x64':
+    if sys.platform == 'win32' and (vsArch == 'x64' or os.environ['Platform'] == 'x64'):
+        basePath = scriptPath + '/../out64/' + buildType
+    if sys.platform == 'win32' and not explicitGenerator:
+        if vsArch == 'x64':
             cmake.append('-Ax64')
-            basePath = scriptPath + '/../out64/' + buildType
         else:
             cmake.append('-AWin32') # default
-    elif windowsArch != '':
-        print("[ERROR] x86/x64 switch is supported only on Windows.")
+    elif vsArch != '':
+        print("[ERROR] x86/x64 switch is supported only with Visual Studio.")
         return 1
     elif sys.platform == 'darwin':
         if not explicitGenerator:
@@ -59,7 +60,8 @@ def run(project, arguments, buildType=''):
     elif 'force' in arguments:
         paths = os.listdir(basePath)
         for path in paths:
-            if path.lower().startswith('cmake'):
+            low = path.lower();
+            if not low.startswith('debug') and not low.startswith('release'):
                 full = basePath + '/' + path
                 if os.path.isdir(full):
                     shutil.rmtree(full, ignore_errors=False)
@@ -67,6 +69,4 @@ def run(project, arguments, buildType=''):
                     os.remove(full)
         print('Cleared previous.')
     os.chdir(basePath)
-    subprocess.call(command, shell=True)
-
-    return 0
+    return subprocess.call(command, shell=True)

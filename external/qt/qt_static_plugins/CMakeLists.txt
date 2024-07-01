@@ -16,7 +16,15 @@ PRIVATE
 target_link_libraries(external_qt_static_plugins
 PUBLIC
     desktop-app::external_qt
+    desktop-app::external_kimageformats
 )
+
+if (DESKTOP_APP_USE_PACKAGED)
+    target_compile_definitions(external_qt_static_plugins
+    PRIVATE
+        QT_STATIC_PLUGINS_USE_PACKAGED
+    )
+endif()
 
 if (LINUX)
     target_link_libraries(external_qt_static_plugins
@@ -24,18 +32,11 @@ if (LINUX)
         desktop-app::external_nimf_qt5
     )
 
-    if (NOT DESKTOP_APP_DISABLE_DBUS_INTEGRATION)
+    if (TARGET Qt::DBus AND NOT DESKTOP_APP_DISABLE_X11_INTEGRATION)
         target_link_libraries(external_qt_static_plugins
         PUBLIC
-            desktop-app::external_fcitx_qt5
+            desktop-app::external_fcitx5_qt
         )
-
-        if (NOT DESKTOP_APP_DISABLE_X11_INTEGRATION)
-            target_link_libraries(external_qt_static_plugins
-            PUBLIC
-                desktop-app::external_fcitx5_qt
-            )
-        endif()
     endif()
 
     if (NOT DESKTOP_APP_DISABLE_X11_INTEGRATION)

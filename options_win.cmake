@@ -7,9 +7,20 @@
 target_compile_definitions(common_options
 INTERFACE
     WIN32
+    WIN32_LEAN_AND_MEAN
     _WINDOWS
     _SCL_SECURE_NO_WARNINGS
     NOMINMAX
+    NOSERVICE
+    NOMCX
+    NOIME
+    NOSOUND
+    NOCOMM
+    NOKANJI
+    NORPC
+    NOPROXYSTUB
+    NOIMAGE
+    NOTAPE
     UNICODE
     _UNICODE
 )
@@ -19,6 +30,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         /bigobj # scheme.cpp and history_widget.cpp has too many sections.
         /permissive-
         # /Qspectre
+        /utf-8
         /W1
         /WX
         /MP     # Enable multi process build.
@@ -38,7 +50,19 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     INTERFACE
         $<IF:$<CONFIG:Debug>,/NODEFAULTLIB:LIBCMT,/DEBUG;/OPT:REF>
         $<$<BOOL:${DESKTOP_APP_NO_PDB}>:/DEBUG:NONE>
+        /INCREMENTAL:NO
     )
+
+    if (DESKTOP_APP_ASAN)
+        target_compile_options(common_options INTERFACE /fsanitize=address)
+
+        # https://developercommunity.visualstudio.com/t/Linker-error-LNK2038-when-using-Parallel/10512721
+        target_compile_definitions(common_options
+        INTERFACE
+            _DISABLE_VECTOR_ANNOTATION
+            _DISABLE_STRING_ANNOTATION
+        )
+    endif()
 
     if (NOT build_win64)
         # target_compile_options(common_options
@@ -48,6 +72,18 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
         target_link_options(common_options
         INTERFACE
             /LARGEADDRESSAWARE # Allow more than 2 GB in 32 bit application.
+        )
+    endif()
+
+    if (DESKTOP_APP_SPECIAL_TARGET)
+        target_compile_options(common_options
+        INTERFACE
+            $<IF:$<CONFIG:Debug>,,/GL>
+        )
+        target_link_options(common_options
+        INTERFACE
+            $<IF:$<CONFIG:Debug>,,/LTCG>
+            $<IF:$<CONFIG:Debug>,,/LTCGOUT:>
         )
     endif()
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID STREQUAL "Clang")

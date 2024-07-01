@@ -8,7 +8,7 @@ function(nuget_add_package package_name package package_version)
     get_property(nuget_exe_defined GLOBAL PROPERTY nuget_exe_path_property SET)
     if (NOT nuget_exe_defined)
         # Thanks https://github.com/clarkezone/flutter_win_webview/blob/master/webview_popupauth/windows/CMakeLists.txt
-        find_program(NUGET_EXE NAMES nuget)
+        find_program(NUGET_EXE NAMES nuget PATHS "${CMAKE_SOURCE_DIR}/../ThirdParty/NuGet")
         if (NOT NUGET_EXE)
             message("NUGET.EXE not found.")
             message(FATAL_ERROR "Please install this executable, and run CMake again.")
@@ -45,7 +45,7 @@ function(nuget_add_package package_name package package_version)
 endfunction()
 
 function(nuget_add_webview target_name)
-    nuget_add_package(webview2 "Microsoft.Web.WebView2" 1.0.864.35)
+    nuget_add_package(webview2 "Microsoft.Web.WebView2" 1.0.1901.177)
 
     set(webview2_loc_native ${webview2_loc}/build/native)
     # target_link_libraries(${target_name}
@@ -77,7 +77,14 @@ function(nuget_add_winrt target_name)
     set(gen_dst ${CMAKE_BINARY_DIR}/packages/gen)
     file(MAKE_DIRECTORY ${gen_dst}/winrt)
 
-    set(winrt_sdk_version ${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION})
+    set(winrt_sdk_version)
+    if (NOT DEFINED CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION)
+        set(CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION)
+    endif()
+    # https://gitlab.kitware.com/cmake/cmake/-/blob/89cfb90b9c0893133983b4f25896671c4f07497c/Modules/InstallRequiredSystemLibraries.cmake#L381
+    if (";${CMAKE_VS_WINDOWS_TARGET_PLATFORM_VERSION};$ENV{UCRTVersion};$ENV{WindowsSDKVersion};" MATCHES [=[;([0-9.]+)[;\]]=])
+        set(winrt_sdk_version ${CMAKE_MATCH_1})
+    endif()
     set(winrt_version_key ${gen_dst}/winrt/version_key)
     set(winrt_version_test ${winrt_version_key}_test)
     set(sdk_version_key ${gen_dst}/winrt/sdk_version_key)

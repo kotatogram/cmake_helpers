@@ -26,7 +26,8 @@ INTERFACE
     WEBRTC_USE_BUILTIN_ISAC_FLOAT
     WEBRTC_LIBRARY_IMPL
     WEBRTC_NON_STATIC_TRACE_EVENT_HANDLERS=1
-    WEBRTC_HAVE_USRSCTP
+    WEBRTC_HAVE_DCSCTP
+    WEBRTC_HAVE_SCTP
     ABSL_ALLOCATOR_NOTHROW=1
 )
 
@@ -62,6 +63,11 @@ else()
     )
 endif()
 
+if (NOT EXISTS ${libs_loc}/tg_owt/out/Debug/${webrtc_lib_prefix}tg_owt${webrtc_lib_suffix})
+    set(webrtc_build_loc ${libs_loc}/tg_owt/out/Release)
+    target_compile_definitions(external_webrtc INTERFACE $<$<CONFIG:Debug>:NDEBUG>)
+endif()
+
 target_include_directories(external_webrtc SYSTEM
 INTERFACE
     ${webrtc_loc}
@@ -89,6 +95,7 @@ INTERFACE
     ${webrtc_libs_list}
     $<LINK_ONLY:desktop-app::external_openssl>
     $<LINK_ONLY:desktop-app::external_jpeg>
+    $<TARGET_FILE:desktop-app::external_jpeg>
     $<LINK_ONLY:desktop-app::external_opus>
     $<TARGET_FILE:desktop-app::external_opus>
     $<LINK_ONLY:desktop-app::external_vpx>
