@@ -52,6 +52,7 @@ if (NOT DESKTOP_APP_USE_PACKAGED)
         target_link_options(common_options
         INTERFACE
             -static-libstdc++
+            -static-libgcc
         )
     elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         target_link_static_libraries(common_options
@@ -98,6 +99,14 @@ if (NOT DESKTOP_APP_USE_PACKAGED OR DESKTOP_APP_SPECIAL_TARGET)
     )
 endif()
 
+if (NOT DESKTOP_APP_DISABLE_JEMALLOC)
+	target_link_libraries(common_options
+	INTERFACE
+	    $<TARGET_OBJECTS:desktop-app::linux_jemalloc_helper>
+	    $<LINK_ONLY:desktop-app::external_jemalloc>
+	)
+endif()
+
 if (DESKTOP_APP_USE_ALLOCATION_TRACER)
     target_link_options(common_options
     INTERFACE
@@ -119,6 +128,19 @@ if (DESKTOP_APP_USE_ALLOCATION_TRACER)
         desktop-app::linux_allocation_tracer
         $<TARGET_FILE:desktop-app::linux_allocation_tracer>
     )
+endif()
+
+if (DESKTOP_APP_ASAN)
+    target_compile_options(common_options INTERFACE -fsanitize=address)
+    target_link_options(common_options INTERFACE -fsanitize=address)
+
+    if (NOT DESKTOP_APP_USE_PACKAGED)
+        if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+            target_link_options(common_options INTERFACE -static-libasan)
+        elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+            target_link_options(common_options INTERFACE -static-libsan)
+        endif()
+    endif()
 endif()
 
 target_link_libraries(common_options

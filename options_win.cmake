@@ -141,6 +141,7 @@ INTERFACE
     Wtsapi32
     Crypt32
     Propsys
+    Bcrypt
 )
 
 if (build_winstore)
