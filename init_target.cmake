@@ -22,30 +22,48 @@ function(init_target target_name) # init_target(my_target [cxx_std_..] folder_na
         endif()
     endforeach()
     target_compile_features(${target_name} PRIVATE ${standard})
-
-    if (WIN32 AND DESKTOP_APP_SPECIAL_TARGET)
-        set_property(TARGET ${target_name} APPEND_STRING PROPERTY STATIC_LIBRARY_OPTIONS "$<IF:$<CONFIG:Debug>,,/LTCG>")
-    endif()
-
     target_link_libraries(${target_name} PRIVATE desktop-app::common_options)
     set_target_properties(${target_name} PROPERTIES
         XCODE_ATTRIBUTE_CLANG_ENABLE_OBJC_WEAK YES
-        XCODE_ATTRIBUTE_GCC_INLINES_ARE_PRIVATE_EXTERN YES
-        XCODE_ATTRIBUTE_GCC_SYMBOLS_PRIVATE_EXTERN YES
-        MSVC_RUNTIME_LIBRARY MultiThreaded$<$<CONFIG:Debug>:Debug>
     )
-    if (DESKTOP_APP_SPECIAL_TARGET)
-        set_target_properties(${target_name} PROPERTIES
-            XCODE_ATTRIBUTE_GCC_OPTIMIZATION_LEVEL $<IF:$<CONFIG:Debug>,0,fast>
-            XCODE_ATTRIBUTE_LLVM_LTO $<IF:$<CONFIG:Debug>,NO,YES>
-        )
+    if (DESKTOP_APP_USE_PACKAGED)
+        get_target_property(target_type ${target_name} TYPE)
+        if (QT_FOUND AND target_type STREQUAL "EXECUTABLE")
+            if (QT_VERSION VERSION_GREATER_EQUAL 6.2)
+                cmake_language(EVAL CODE "cmake_language(DEFER CALL qt_finalize_target ${target_name})")
+            endif()
+            if (LINUX)
+                qt_import_plugins(${target_name}
+                INCLUDE
+                    Qt::QGtk3ThemePlugin
+                    Qt::QComposePlatformInputContextPlugin
+                    Qt::QIbusPlatformInputContextPlugin
+                    Qt::QXdgDesktopPortalThemePlugin
+                )
+            endif()
+        endif()
+    endif()
+    if (DESKTOP_APP_SPECIAL_TARGET AND DESKTOP_APP_ENABLE_LTO)
+        if (MSVC)
+            set_property(TARGET ${target_name} APPEND_STRING PROPERTY STATIC_LIBRARY_OPTIONS "$<$<NOT:$<CONFIG:Debug>>:/LTCG>")
+        elseif (CMAKE_GENERATOR STREQUAL Xcode)
+            set_target_properties(${target_name} PROPERTIES
+                XCODE_ATTRIBUTE_LLVM_LTO $<IF:$<CONFIG:Debug>,NO,YES>
+            )
+        else()
+            set_target_properties(${target_name} PROPERTIES
+                INTERPROCEDURAL_OPTIMIZATION_RELEASE True
+                INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO True
+                INTERPROCEDURAL_OPTIMIZATION_MINSIZEREL True
+            )
+        endif()
     endif()
 endfunction()
 
 # This code is not supposed to run on build machine, only on target machine.
 function(init_non_host_target target_name)
     init_target(${ARGV})
-    if (APPLE)
+    if (DESKTOP_APP_MAC_ARCH)
         set_target_properties(${target_name} PROPERTIES
             OSX_ARCHITECTURES "${DESKTOP_APP_MAC_ARCH}"
         )

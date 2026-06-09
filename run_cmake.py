@@ -16,7 +16,7 @@ def run(project, arguments, buildType=''):
     for arg in arguments:
         if arg == 'debug':
             cmake.append('-DCMAKE_BUILD_TYPE=Debug')
-        elif arg == 'x86' or arg == 'x64':
+        elif arg == 'x86' or arg == 'x64' or arg == 'arm':
             vsArch = arg
         elif arg != 'force':
             if arg.startswith('-G'):
@@ -27,10 +27,14 @@ def run(project, arguments, buildType=''):
     if sys.platform == 'win32' and not explicitGenerator:
         if vsArch == 'x64':
             cmake.append('-Ax64')
+            cmake.append('-T v143')
+        elif vsArch == 'arm':
+            cmake.append('-AARM64')
         else:
             cmake.append('-AWin32') # default
+            cmake.append('-T v143')
     elif vsArch != '':
-        print("[ERROR] x86/x64 switch is supported only with Visual Studio.")
+        print("[ERROR] x86/x64/arm switch is supported only with Visual Studio.")
         return 1
     elif sys.platform == 'darwin':
         if not explicitGenerator:

@@ -8,10 +8,12 @@ if (DESKTOP_APP_USE_PACKAGED)
     add_library(external_vpx INTERFACE IMPORTED GLOBAL)
     add_library(desktop-app::external_vpx ALIAS external_vpx)
 
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(LIBVPX IMPORTED_TARGET vpx>=1.10.0)
+    find_package(PkgConfig)
+    if (PkgConfig_FOUND)
+        pkg_check_modules(DESKTOP_APP_VPX IMPORTED_TARGET vpx>=1.10.0)
+    endif()
 
-    target_link_libraries(external_vpx INTERFACE PkgConfig::LIBVPX)
+    target_link_libraries(external_vpx INTERFACE PkgConfig::DESKTOP_APP_VPX)
     return()
 endif()
 
@@ -23,7 +25,9 @@ if (WIN32)
     INTERFACE
         ${libs_loc}/local/include
     )
-    if (build_win64)
+    if (build_winarm)
+        set(libvpx_release_folder ARM64)
+    elseif (build_win64)
         set(libvpx_release_folder x64)
     else()
         set(libvpx_release_folder Win32)

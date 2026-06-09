@@ -7,7 +7,7 @@
 add_library(external_webrtc INTERFACE IMPORTED GLOBAL)
 add_library(desktop-app::external_webrtc ALIAS external_webrtc)
 
-if (DESKTOP_APP_USE_PACKAGED)
+if (DESKTOP_APP_USE_PACKAGED OR LINUX)
     find_package(tg_owt REQUIRED)
     target_link_libraries(external_webrtc INTERFACE tg_owt::tg_owt)
     return()
@@ -20,6 +20,7 @@ target_compile_definitions(external_webrtc
 INTERFACE
     WEBRTC_ENABLE_PROTOBUF=0
     WEBRTC_INCLUDE_INTERNAL_AUDIO_DEVICE
+    RTC_ENABLE_H265
     RTC_ENABLE_VP9
     HAVE_SCTP
     WEBRTC_USE_H264
@@ -38,6 +39,7 @@ if (WIN32)
     target_compile_definitions(external_webrtc
     INTERFACE
         WEBRTC_WIN
+        RTC_ENABLE_WIN_WGC
     )
 else()
     set(webrtc_lib_prefix lib)
@@ -48,24 +50,12 @@ else()
         INTERFACE
             WEBRTC_MAC
         )
-    else()
-        target_compile_definitions(external_webrtc
-        INTERFACE
-            WEBRTC_LINUX
-            WEBRTC_USE_X11
-            WEBRTC_USE_PIPEWIRE
-        )
     endif()
 
     target_compile_definitions(external_webrtc
     INTERFACE
         WEBRTC_POSIX
     )
-endif()
-
-if (NOT EXISTS ${libs_loc}/tg_owt/out/Debug/${webrtc_lib_prefix}tg_owt${webrtc_lib_suffix})
-    set(webrtc_build_loc ${libs_loc}/tg_owt/out/Release)
-    target_compile_definitions(external_webrtc INTERFACE $<$<CONFIG:Debug>:NDEBUG>)
 endif()
 
 target_include_directories(external_webrtc SYSTEM
@@ -96,6 +86,8 @@ INTERFACE
     $<LINK_ONLY:desktop-app::external_openssl>
     $<LINK_ONLY:desktop-app::external_jpeg>
     $<TARGET_FILE:desktop-app::external_jpeg>
+    $<LINK_ONLY:desktop-app::external_openh264>
+    $<TARGET_FILE:desktop-app::external_openh264>
     $<LINK_ONLY:desktop-app::external_opus>
     $<TARGET_FILE:desktop-app::external_opus>
     $<LINK_ONLY:desktop-app::external_vpx>
@@ -111,24 +103,5 @@ elseif (APPLE)
     target_link_libraries(external_webrtc
     INTERFACE
         -ObjC
-    )
-else()
-    # Required for desktop_capture
-    target_link_static_libraries(external_webrtc
-    INTERFACE
-        Xcomposite
-        Xdamage
-        Xext
-        Xfixes
-        Xrandr
-        Xrender
-        Xtst
-    )
-    target_link_libraries(external_webrtc
-    INTERFACE
-        X11
-        gio-2.0
-        gobject-2.0
-        glib-2.0
     )
 endif()

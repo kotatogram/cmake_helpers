@@ -30,12 +30,10 @@ INTERFACE
     -Wno-unused-variable
     -Wno-unused-parameter
     -Wno-unused-function
+    -Wno-deprecated-this-capture
     -Wno-switch
-    -Wno-comment
     -Wno-missing-field-initializers
     -Wno-sign-compare
-    -Wno-unknown-attributes
-    -Wno-pragma-system-header-outside-header
     -Wno-shorten-64-to-32
 )
 
@@ -47,15 +45,11 @@ if (DESKTOP_APP_SPECIAL_TARGET)
     )
 endif()
 
-target_link_options_if_exists(common_options
-INTERFACE
-    -Wl,-ld_classic
-)
-
 target_link_frameworks(common_options
 INTERFACE
     Cocoa
     CoreFoundation
+    CoreLocation
     CoreServices
     CoreText
     CoreGraphics
@@ -64,7 +58,6 @@ INTERFACE
     AudioUnit
     ApplicationServices
     Foundation
-    AGL
     Security
     SystemConfiguration
     Carbon
@@ -84,4 +77,17 @@ INTERFACE
     MediaPlayer
     IOSurface
     Metal
+    LocalAuthentication
+    Vision
+)
+
+target_link_frameworks_weak(common_options
+INTERFACE
+    Network
+    UniformTypeIdentifiers
+)
+
+target_link_libraries(common_options
+INTERFACE
+    resolv
 )

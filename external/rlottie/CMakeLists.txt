@@ -15,8 +15,8 @@ if (DESKTOP_APP_USE_PACKAGED_RLOTTIE)
     endif()
 
     find_package(PkgConfig REQUIRED)
-    pkg_check_modules(RLOTTIE REQUIRED IMPORTED_TARGET rlottie)
-    target_link_libraries(external_rlottie INTERFACE PkgConfig::RLOTTIE)
+    pkg_check_modules(DESKTOP_APP_RLOTTIE REQUIRED IMPORTED_TARGET rlottie)
+    target_link_libraries(external_rlottie INTERFACE PkgConfig::DESKTOP_APP_RLOTTIE)
     return()
 endif()
 
@@ -125,11 +125,11 @@ PRIVATE
     ${rlottie_loc}/src/vector/freetype
 )
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+if (MSVC)
     target_compile_options(external_rlottie_bundled
     PRIVATE
-        /w44244 # 'initializing': conversion from 'double' to 'float'
-        /w44251 # needs to have dll-interface to be used by clients of class
+        /wd4251 # needs to have dll-interface to be used by clients of class
+        /wd5054 # operator 'operator-name': deprecated between enumerations of different types
     )
 endif()
 

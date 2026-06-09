@@ -8,10 +8,16 @@ if (DESKTOP_APP_USE_PACKAGED)
     add_library(external_opus INTERFACE IMPORTED GLOBAL)
     add_library(desktop-app::external_opus ALIAS external_opus)
 
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(OPUS IMPORTED_TARGET opus)
+    find_package(Opus QUIET)
+    if (Opus_FOUND)
+        target_link_libraries(external_opus INTERFACE Opus::opus)
+        return()
+    endif()
 
-    target_link_libraries(external_opus INTERFACE PkgConfig::OPUS)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(DESKTOP_APP_OPUS IMPORTED_TARGET opus)
+
+    target_link_libraries(external_opus INTERFACE PkgConfig::DESKTOP_APP_OPUS)
     return()
 endif()
 

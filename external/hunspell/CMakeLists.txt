@@ -8,11 +8,13 @@ add_library(external_hunspell INTERFACE IMPORTED GLOBAL)
 add_library(desktop-app::external_hunspell ALIAS external_hunspell)
 
 if (DESKTOP_APP_USE_PACKAGED)
-    find_package(PkgConfig REQUIRED)
-    pkg_check_modules(HUNSPELL IMPORTED_TARGET hunspell)
+    find_package(PkgConfig)
+    if (PkgConfig_FOUND)
+        pkg_check_modules(DESKTOP_APP_HUNSPELL IMPORTED_TARGET hunspell)
+    endif()
 
-    if (HUNSPELL_FOUND)
-        target_link_libraries(external_hunspell INTERFACE PkgConfig::HUNSPELL)
+    if (DESKTOP_APP_HUNSPELL_FOUND)
+        target_link_libraries(external_hunspell INTERFACE PkgConfig::DESKTOP_APP_HUNSPELL)
         return()
     endif()
 endif()
@@ -64,6 +66,13 @@ PUBLIC
     HUNSPELL_STATIC
     MAXSUGGESTION=5
 )
+
+if (WIN32)
+    target_compile_definitions(external_hunspell_bundled
+    PRIVATE
+        _CRT_SECURE_NO_WARNINGS
+    )
+endif()
 
 target_link_libraries(external_hunspell
 INTERFACE

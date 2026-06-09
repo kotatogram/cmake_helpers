@@ -7,14 +7,7 @@
 add_library(external_openal INTERFACE IMPORTED GLOBAL)
 add_library(desktop-app::external_openal ALIAS external_openal)
 
-if (DESKTOP_APP_USE_PACKAGED)
-    find_package(OpenAL)
-    if (OPENAL_FOUND)
-        target_include_directories(external_openal SYSTEM INTERFACE ${OPENAL_INCLUDE_DIR})
-        target_link_libraries(external_openal INTERFACE ${OPENAL_LIBRARY})
-        return()
-    endif()
-
+if (DESKTOP_APP_USE_PACKAGED OR LINUX)
     find_package(OpenAL REQUIRED CONFIG)
     target_link_libraries(external_openal INTERFACE OpenAL::OpenAL)
     return()
@@ -37,15 +30,6 @@ elseif (APPLE)
     target_link_libraries(external_openal
     INTERFACE
         ${libs_loc}/local/lib/libopenal.a
-    )
-else()
-    target_include_directories(external_openal SYSTEM
-    INTERFACE
-        /usr/local/include/AL
-    )
-    target_link_static_libraries(external_openal
-    INTERFACE
-        openal
     )
 endif()
 
